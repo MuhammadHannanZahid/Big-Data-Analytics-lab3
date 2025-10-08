@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: ${MONGO_IMAGE}
+    container_name: mongo
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - backend
+
+  app:
+    image: python:3.11-slim
+    container_name: student_app
+    working_dir: /app
+    volumes:
+      - .:/app
+    env_file: .env
+    depends_on:
+      - mongo
+    command: bash -c "pip install --no-cache-dir -r requirements.txt && python app.py"
+    stdin_open: true
+    tty: true
+    networks:
+      - backend
+
+volumes:
+  mongodata:
+
+networks:
+  backend:
